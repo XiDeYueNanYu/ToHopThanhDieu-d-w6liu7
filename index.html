@@ -1,0 +1,1838 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>越南语双音节声调练习</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; margin: 0; padding-bottom: 300px; background-color: #f7fbf3; }
+        #gameContainer { display: block; min-height: calc(100vh - 150px); }
+        #infoBox { width: 95%; max-width: 700px; min-height: 100px; margin: 0 auto; border: 2px solid #feeec9; background: #fede94; color: #5b5b5b; display: flex; align-items: center; justify-content: center; font-size: clamp(30px, 5vw, 50px); font-weight: bold; }
+        #contactBox, #instructionBox { width: 90%; max-width: 700px; min-height: 25px; margin: 0px auto; border: 2px solid #feeec9; background: #fede94; color: #6b6b6b; display: flex; align-items: center; justify-content: left; padding-left: 20px; font-size: clamp(14px, 2vw, 18px); font-weight: bold; }
+        #controls { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 95%; max-width: 800px; background: #f7fbf3; border-top: 2px solid #ddd; padding: 10px 0; z-index: 1000; }
+        #controls div { margin: 5px 0; display: flex; justify-content: center; align-items: center; }
+        button { padding: 8px 12px; margin: 0 5px; cursor: pointer; border: 2px solid #fede94; background: #fede94; box-shadow: 0 3px 5px rgba(0, 0, 0, 0.1); color: #5b5b5b; font-size: 20px; border-radius: 5px; }
+        #sentenceNumber { width: 50px; padding: 10px; text-align: center; border: 3px solid #fede94; background: #f8e5ba; border-radius: 10px; font-size: 16px; }
+        .active-mode { border: 3px solid #b6d7a8; background: #d9ead3; }
+        #indicator { width: 95%; max-width: 700px; min-height: 60px; margin: 10px auto; padding: 10px; border: 3px solid #fed16a; background: #ffffe0; border-radius: 10px; display: flex; flex-direction: column; justify-content: center; align-items: center; font-size: 28px; font-weight: bold; }
+        #optionsContainer { width: 100%; max-width: 700px; margin: 10px auto; }
+        .optionBtn { width: 95%; max-width: 700px; padding: 15px; margin: 5px 0; border: 1px solid #ccc; background: #ffffff; font-size: 32px; cursor: pointer; border-radius: 8px; }
+        .correct { background: #B7D7AA !important; }
+        .wrong { background: #CE6D5E !important; }
+        #results { display: none; width: 95%; max-width: 700px; margin: 10px auto; padding: 15px; border: 2px solid #734A2E; background: #fffbef; color: #000; font-size: 20px; text-align: left; border-radius: 5px; white-space: pre-line; }
+        #copyBtn { display: none; margin: 10px auto; background: #76a5af; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; }
+        .disabled { opacity: 0.5; pointer-events: none; }
+    </style>
+</head>
+<body>
+    <div id="gameContainer">
+        <div id="infoBox">越南语声调组合练习</div>
+        <div id="contactBox">讲师-阮玉煌 | Weixin：XiDeYueNanYu</div>
+        <div id="instructionBox">听音频，选择正确的声调组合</div>
+        <div id="indicator"></div>
+        <div id="optionsContainer"></div>
+        <div id="results"></div>
+        <button id="copyBtn">复制结果 (Copy Results)</button>
+        <div id="score" style="font-size: 24px; color: #FF6820; margin: 10px;"></div>
+    </div>
+
+    <div id="controls">
+        <div>
+            <button id="freeModeBtn" class="active-mode">自由模式</button>
+            <button id="testModeBtn">作业模式</button>
+        </div>
+        <div>
+            <button id="autoContinueBtn">自动继续</button>
+            <button id="mixModeBtn">循序-综合</button>
+        </div>
+        <div>
+            <button id="prevBtn">◀</button>
+            <input type="text" id="sentenceNumber" inputmode="numeric">
+            <button id="nextBtn">▶</button>
+            <button id="replayBtn">再听一遍</button>
+        </div>
+    </div>
+
+    <audio id="mainAudio"></audio>
+    <audio id="correctAudio" src="Dung.mp3"></audio>
+    <audio id="wrongAudio" src="Sai.mp3"></audio>
+
+    <script>
+        const sentences = [
+            {
+        "audioFile": "audio-pd.mp3",
+        "start": 0,
+        "end": 1.636792,
+        "correctAnswer": "平跌",
+        "khongthanhdieu": "ca sy",
+        "cothanhdieu": "ca sỹ",
+        "translation": "歌手",
+        "options": [
+            "平跌",
+            "平锐",
+            "跌平"
+        ]
+    },
+    {
+        "audioFile": "audio-pd.mp3",
+        "start": 2.186792,
+        "end": 3.926792,
+        "correctAnswer": "平跌",
+        "khongthanhdieu": "ngôn ngư",
+        "cothanhdieu": "ngôn ngữ",
+        "translation": "语言",
+        "options": [
+            "平跌",
+            "跌玄",
+            "玄平"
+        ]
+    },
+    {
+        "audioFile": "audio-pd.mp3",
+        "start": 4.326792,
+        "end": 6.116792,
+        "correctAnswer": "平跌",
+        "khongthanhdieu": "xin lôi",
+        "cothanhdieu": "xin lỗi",
+        "translation": "抱歉",
+        "options": [
+            "平跌",
+            "跌跌",
+            "平玄"
+        ]
+    },
+    {
+        "audioFile": "audio-pd.mp3",
+        "start": 6.596792,
+        "end": 8.326792,
+        "correctAnswer": "平跌",
+        "khongthanhdieu": "chia re",
+        "cothanhdieu": "chia rẽ",
+        "translation": "分裂",
+        "options": [
+            "平跌",
+            "跌锐",
+            "锐平"
+        ]
+    },
+    {
+        "audioFile": "audio-pd.mp3",
+        "start": 8.816792,
+        "end": 10.566792,
+        "correctAnswer": "平跌",
+        "khongthanhdieu": "đưa tiên",
+        "cothanhdieu": "đưa tiễn",
+        "translation": "送行",
+        "options": [
+            "平跌",
+            "跌重",
+            "平问"
+        ]
+    },
+    {
+        "audioFile": "audio-pd.mp3",
+        "start": 11.156792,
+        "end": 12.886792,
+        "correctAnswer": "平跌",
+        "khongthanhdieu": "hoa sưa",
+        "cothanhdieu": "hoa sữa",
+        "translation": "牛奶花",
+        "options": [
+            "平跌",
+            "玄跌",
+            "跌玄"
+        ]
+    },
+    {
+        "audioFile": "audio-pd.mp3",
+        "start": 13.536792,
+        "end": 15.196792,
+        "correctAnswer": "平跌",
+        "khongthanhdieu": "khoe me",
+        "cothanhdieu": "khoe mẽ",
+        "translation": "炫耀",
+        "options": [
+            "平跌",
+            "平锐",
+            "重跌"
+        ]
+    },
+    {
+        "audioFile": "audio-pd.mp3",
+        "start": 15.656792,
+        "end": 17.406792,
+        "correctAnswer": "平跌",
+        "khongthanhdieu": "lo nghi",
+        "cothanhdieu": "lo nghĩ",
+        "translation": "担忧",
+        "options": [
+            "平跌",
+            "跌平",
+            "玄玄"
+        ]
+    },
+    {
+        "audioFile": "audio-pd.mp3",
+        "start": 17.866792,
+        "end": 19.606792,
+        "correctAnswer": "平跌",
+        "khongthanhdieu": "nho nha",
+        "cothanhdieu": "nho nhã",
+        "translation": "优雅",
+        "options": [
+            "平跌",
+            "跌跌",
+            "平重"
+        ]
+    },
+    {
+        "audioFile": "audio-pd.mp3",
+        "start": 20.096792,
+        "end": 21.946792,
+        "correctAnswer": "平跌",
+        "khongthanhdieu": "xưa cu",
+        "cothanhdieu": "xưa cũ",
+        "translation": "古老",
+        "options": [
+            "平跌",
+            "锐跌",
+            "跌锐"
+        ]
+    },
+    {
+        "audioFile": "audio-pd.mp3",
+        "start": 22.406792,
+        "end": 24.136792,
+        "correctAnswer": "平跌",
+        "khongthanhdieu": "thư gian",
+        "cothanhdieu": "thư giãn",
+        "translation": "放松",
+        "options": [
+            "平跌",
+            "跌玄",
+            "平问"
+        ]
+    },
+    {
+        "audioFile": "audio-pd.mp3",
+        "start": 24.606792,
+        "end": 26.476792,
+        "correctAnswer": "平跌",
+        "khongthanhdieu": "xao nhang",
+        "cothanhdieu": "xao nhãng",
+        "translation": "分心",
+        "options": [
+            "平跌",
+            "玄平",
+            "跌重"
+        ]
+    },
+    {
+        "audioFile": "audio-pd.mp3",
+        "start": 26.976792,
+        "end": 28.756792,
+        "correctAnswer": "平跌",
+        "khongthanhdieu": "mưa lu",
+        "cothanhdieu": "mưa lũ",
+        "translation": "洪水",
+        "options": [
+            "平跌",
+            "平锐",
+            "重跌"
+        ]
+    },
+    {
+        "audioFile": "audio-pd.mp3",
+        "start": 29.206792,
+        "end": 30.956792,
+        "correctAnswer": "平跌",
+        "khongthanhdieu": "truy na",
+        "cothanhdieu": "truy nã",
+        "translation": "通缉",
+        "options": [
+            "平跌",
+            "跌平",
+            "玄锐"
+        ]
+    },
+    {
+        "audioFile": "audio-pd.mp3",
+        "start": 31.446792,
+        "end": 33.166792,
+        "correctAnswer": "平跌",
+        "khongthanhdieu": "yên tinh",
+        "cothanhdieu": "yên tĩnh",
+        "translation": "安静",
+        "options": [
+            "平跌",
+            "跌跌",
+            "平玄"
+        ]
+    },
+    {
+        "audioFile": "audio-pd.mp3",
+        "start": 33.636792,
+        "end": 35.306792,
+        "correctAnswer": "平跌",
+        "khongthanhdieu": "kiên nhân",
+        "cothanhdieu": "kiên nhẫn",
+        "translation": "耐心",
+        "options": [
+            "平跌",
+            "锐跌",
+            "跌玄"
+        ]
+    },
+	{
+        "audioFile": "audio-xr.mp3",
+        "start": 0.005583,
+        "end": 1.495583,
+        "correctAnswer": "玄锐",
+        "khongthanhdieu": "ca rôt",
+        "cothanhdieu": "cà rốt",
+        "translation": "胡萝卜",
+        "options": [
+            "玄锐",
+            "锐玄",
+            "玄玄"
+        ]
+    },
+    {
+        "audioFile": "audio-xr.mp3",
+        "start": 1.705583,
+        "end": 3.495583,
+        "correctAnswer": "玄锐",
+        "khongthanhdieu": "chia khoa",
+        "cothanhdieu": "chìa khóa",
+        "translation": "钥匙",
+        "options": [
+            "玄锐",
+            "玄平",
+            "平玄"
+        ]
+    },
+    {
+        "audioFile": "audio-xr.mp3",
+        "start": 3.485583,
+        "end": 5.115583,
+        "correctAnswer": "玄锐",
+        "khongthanhdieu": "đâu bêp",
+        "cothanhdieu": "đầu bếp",
+        "translation": "厨师",
+        "options": [
+            "玄锐",
+            "玄问",
+            "问玄"
+        ]
+    },
+    {
+        "audioFile": "audio-xr.mp3",
+        "start": 5.295583,
+        "end": 6.865583,
+        "correctAnswer": "玄锐",
+        "khongthanhdieu": "Han Quôc",
+        "cothanhdieu": "Hàn Quốc",
+        "translation": "韩国",
+        "options": [
+            "玄锐",
+            "玄跌",
+            "跌玄"
+        ]
+    },
+    {
+        "audioFile": "audio-xr.mp3",
+        "start": 7.095583,
+        "end": 8.545583,
+        "correctAnswer": "玄锐",
+        "khongthanhdieu": "hinh thưc",
+        "cothanhdieu": "hình thức",
+        "translation": "形式",
+        "options": [
+            "玄锐",
+            "玄重",
+            "重玄"
+        ]
+    },
+    {
+        "audioFile": "audio-xr.mp3",
+        "start": 8.625583,
+        "end": 10.245583,
+        "correctAnswer": "玄锐",
+        "khongthanhdieu": "mau săc",
+        "cothanhdieu": "màu sắc",
+        "translation": "颜色",
+        "options": [
+            "玄锐",
+            "锐平",
+            "平锐"
+        ]
+    },
+    {
+        "audioFile": "audio-xr.mp3",
+        "start": 10.335583,
+        "end": 12.155583,
+        "correctAnswer": "玄锐",
+        "khongthanhdieu": "mươi chin",
+        "cothanhdieu": "mười chín",
+        "translation": "十九",
+        "options": [
+            "玄锐",
+            "锐问",
+            "问锐"
+        ]
+    },
+    {
+        "audioFile": "audio-xr.mp3",
+        "start": 12.195583,
+        "end": 13.945583,
+        "correctAnswer": "玄锐",
+        "khongthanhdieu": "hang xom",
+        "cothanhdieu": "hàng xóm",
+        "translation": "邻居",
+        "options": [
+            "玄锐",
+            "锐跌",
+            "跌锐"
+        ]
+    },
+    {
+        "audioFile": "audio-xr.mp3",
+        "start": 13.975583,
+        "end": 15.665583,
+        "correctAnswer": "玄锐",
+        "khongthanhdieu": "huyên bi",
+        "cothanhdieu": "huyền bí",
+        "translation": "神秘",
+        "options": [
+            "玄锐",
+            "锐重",
+            "重锐"
+        ]
+    },
+    {
+        "audioFile": "audio-xr.mp3",
+        "start": 15.775583,
+        "end": 17.285583,
+        "correctAnswer": "玄锐",
+        "khongthanhdieu": "hôi đap",
+        "cothanhdieu": "hồi đáp",
+        "translation": "回复",
+        "options": [
+            "玄锐",
+            "锐玄",
+            "玄平"
+        ]
+    },
+    {
+        "audioFile": "audio-xr.mp3",
+        "start": 17.475583,
+        "end": 19.155583,
+        "correctAnswer": "玄锐",
+        "khongthanhdieu": "hanh ly",
+        "cothanhdieu": "hành lý",
+        "translation": "行李",
+        "options": [
+            "玄锐",
+            "锐平",
+            "平锐"
+        ]
+    },
+    {
+        "audioFile": "audio-xr.mp3",
+        "start": 19.205583,
+        "end": 20.865583,
+        "correctAnswer": "玄锐",
+        "khongthanhdieu": "ngươi tôt",
+        "cothanhdieu": "người tốt",
+        "translation": "好人",
+        "options": [
+            "玄锐",
+            "锐问",
+            "问锐"
+        ]
+    },
+    {
+        "audioFile": "audio-xr.mp3",
+        "start": 21.025583,
+        "end": 22.865583,
+        "correctAnswer": "玄锐",
+        "khongthanhdieu": "mêm yêu",
+        "cothanhdieu": "mềm yếu",
+        "translation": "软弱",
+        "options": [
+            "玄锐",
+            "锐跌",
+            "跌锐"
+        ]
+    },
+    {
+        "audioFile": "audio-xr.mp3",
+        "start": 22.925583,
+        "end": 24.705583,
+        "correctAnswer": "玄锐",
+        "khongthanhdieu": "đông chi",
+        "cothanhdieu": "đồng chí",
+        "translation": "同志",
+        "options": [
+            "玄锐",
+            "锐重",
+            "重锐"
+        ]
+    },
+    {
+        "audioFile": "audio-xr.mp3",
+        "start": 24.735583,
+        "end": 26.555583,
+        "correctAnswer": "玄锐",
+        "khongthanhdieu": "nha bao",
+        "cothanhdieu": "nhà báo",
+        "translation": "记者",
+        "options": [
+            "玄锐",
+            "锐玄",
+            "玄问"
+        ]
+    },
+    {
+        "audioFile": "audio-xr.mp3",
+        "start": 26.605583,
+        "end": 28.265583,
+        "correctAnswer": "玄锐",
+        "khongthanhdieu": "nha hat",
+        "cothanhdieu": "nhà hát",
+        "translation": "剧院",
+        "options": [
+            "玄锐",
+            "锐平",
+            "平锐"
+        ]
+    },
+    {
+        "audioFile": "audio-xr.mp3",
+        "start": 28.355583,
+        "end": 29.995583,
+        "correctAnswer": "玄锐",
+        "khongthanhdieu": "nha sach",
+        "cothanhdieu": "nhà sách",
+        "translation": "书店",
+        "options": [
+            "玄锐",
+            "锐问",
+            "问锐"
+        ]
+    },
+    {
+        "audioFile": "audio-xr.mp3",
+        "start": 30.235583,
+        "end": 31.985583,
+        "correctAnswer": "玄锐",
+        "khongthanhdieu": "quân ao",
+        "cothanhdieu": "quần áo",
+        "translation": "衣服",
+        "options": [
+            "玄锐",
+            "锐跌",
+            "跌锐"
+        ]
+    },
+    {
+        "audioFile": "audio-xr.mp3",
+        "start": 32.125583,
+        "end": 33.785583,
+        "correctAnswer": "玄锐",
+        "khongthanhdieu": "tinh huông",
+        "cothanhdieu": "tình huống",
+        "translation": "情况",
+        "options": [
+            "玄锐",
+            "锐重",
+            "重锐"
+        ]
+    },
+    {
+        "audioFile": "audio-xr.mp3",
+        "start": 33.935583,
+        "end": 35.595583,
+        "correctAnswer": "玄锐",
+        "khongthanhdieu": "truyên thông",
+        "cothanhdieu": "truyền thống",
+        "translation": "传统",
+        "options": [
+            "玄锐",
+            "锐玄",
+            "玄跌"
+        ]
+    },
+	{
+        "audioFile": "audio-dd.mp3",
+        "start": 0,
+        "end": 1.821375,
+        "correctAnswer": "跌跌",
+        "khongthanhdieu": "cu ky",
+        "cothanhdieu": "cũ kỹ",
+        "translation": "陈旧",
+        "options": [
+            "跌跌",
+            "跌平",
+            "平跌"
+        ]
+    },
+    {
+        "audioFile": "audio-dd.mp3",
+        "start": 2.151375,
+        "end": 4.131375,
+        "correctAnswer": "跌跌",
+        "khongthanhdieu": "ngâm nghi",
+        "cothanhdieu": "ngẫm nghĩ",
+        "translation": "思索",
+        "options": [
+            "跌跌",
+            "跌玄",
+            "玄跌"
+        ]
+    },
+    {
+        "audioFile": "audio-dd.mp3",
+        "start": 4.381375,
+        "end": 6.391375,
+        "correctAnswer": "跌跌",
+        "khongthanhdieu": "vưng chai",
+        "cothanhdieu": "vững chãi",
+        "translation": "坚固",
+        "options": [
+            "跌跌",
+            "跌锐",
+            "锐跌"
+        ]
+    },
+    {
+        "audioFile": "audio-dd.mp3",
+        "start": 6.641375,
+        "end": 8.601375,
+        "correctAnswer": "跌跌",
+        "khongthanhdieu": "mai mai",
+        "cothanhdieu": "mãi mãi",
+        "translation": "永远",
+        "options": [
+            "跌跌",
+            "跌问",
+            "问跌"
+        ]
+    },
+    {
+        "audioFile": "audio-dd.mp3",
+        "start": 8.891375,
+        "end": 10.831375,
+        "correctAnswer": "跌跌",
+        "khongthanhdieu": "mum mim",
+        "cothanhdieu": "mũm mĩm",
+        "translation": "丰满圆润",
+        "options": [
+            "跌跌",
+            "跌重",
+            "重跌"
+        ]
+    },
+    {
+        "audioFile": "audio-dd.mp3",
+        "start": 11.051375,
+        "end": 12.911375,
+        "correctAnswer": "跌跌",
+        "khongthanhdieu": "bô ba",
+        "cothanhdieu": "bỗ bã",
+        "translation": "鲁莽",
+        "options": [
+            "跌跌",
+            "平平",
+            "平跌"
+        ]
+    },
+    {
+        "audioFile": "audio-dd.mp3",
+        "start": 13.181375,
+        "end": 15.101375,
+        "correctAnswer": "跌跌",
+        "khongthanhdieu": "lê nghia",
+        "cothanhdieu": "lễ nghĩa",
+        "translation": "礼仪",
+        "options": [
+            "跌跌",
+            "平跌",
+            "跌平"
+        ]
+    },
+    {
+        "audioFile": "audio-dd.mp3",
+        "start": 15.341375,
+        "end": 17.221375,
+        "correctAnswer": "跌跌",
+        "khongthanhdieu": "mâu ma",
+        "cothanhdieu": "mẫu mã",
+        "translation": "款式",
+        "options": [
+            "跌跌",
+            "平玄",
+            "玄平"
+        ]
+    },
+    {
+        "audioFile": "audio-dd.mp3",
+        "start": 17.481375,
+        "end": 19.371375,
+        "correctAnswer": "跌跌",
+        "khongthanhdieu": "vu bao",
+        "cothanhdieu": "vũ bão",
+        "translation": "暴雨",
+        "options": [
+            "跌跌",
+            "平锐",
+            "锐平"
+        ]
+    },
+    {
+        "audioFile": "audio-dd.mp3",
+        "start": 19.581375,
+        "end": 21.421375,
+        "correctAnswer": "跌跌",
+        "khongthanhdieu": "ngư nghia",
+        "cothanhdieu": "ngữ nghĩa",
+        "translation": "语义",
+        "options": [
+            "跌跌",
+            "平问",
+            "问平"
+        ]
+    },
+    {
+        "audioFile": "audio-dd.mp3",
+        "start": 21.641375,
+        "end": 23.551375,
+        "correctAnswer": "跌跌",
+        "khongthanhdieu": "nư si",
+        "cothanhdieu": "nữ sĩ",
+        "translation": "女士",
+        "options": [
+            "跌跌",
+            "平重",
+            "重平"
+        ]
+    },
+    {
+        "audioFile": "audio-dd.mp3",
+        "start": 23.801375,
+        "end": 25.701375,
+        "correctAnswer": "跌跌",
+        "khongthanhdieu": "ma nao",
+        "cothanhdieu": "mã não",
+        "translation": "玛瑙",
+        "options": [
+            "跌跌",
+            "平跌",
+            "跌玄"
+        ]
+    },
+    {
+        "audioFile": "audio-dd.mp3",
+        "start": 25.891375,
+        "end": 27.811375,
+        "correctAnswer": "跌跌",
+        "khongthanhdieu": "rôi rai",
+        "cothanhdieu": "rỗi rãi",
+        "translation": "空闲",
+        "options": [
+            "跌跌",
+            "平玄",
+            "玄锐"
+        ]
+    },
+    {
+        "audioFile": "audio-dd.mp3",
+        "start": 27.981375,
+        "end": 29.851375,
+        "correctAnswer": "跌跌",
+        "khongthanhdieu": "my man",
+        "cothanhdieu": "mỹ mãn",
+        "translation": "美满",
+        "options": [
+            "跌跌",
+            "平锐",
+            "锐问"
+        ]
+    },
+    {
+        "audioFile": "audio-dd.mp3",
+        "start": 30.031375,
+        "end": 31.911375,
+        "correctAnswer": "跌跌",
+        "khongthanhdieu": "my nư",
+        "cothanhdieu": "mỹ nữ",
+        "translation": "美女",
+        "options": [
+            "跌跌",
+            "平问",
+            "问平"
+        ]
+    },
+    {
+        "audioFile": "audio-dd.mp3",
+        "start": 32.011375,
+        "end": 33.911375,
+        "correctAnswer": "跌跌",
+        "khongthanhdieu": "nghia si",
+        "cothanhdieu": "nghĩa sĩ",
+        "translation": "义士",
+        "options": [
+            "跌跌",
+            "平重",
+            "重跌"
+        ]
+    },
+	{
+        "audioFile": "audio-zhx.mp3",
+        "start": 0.029125,
+        "end": 1.809125,
+        "correctAnswer": "重玄",
+        "khongthanhdieu": "môt nghin",
+        "cothanhdieu": "một nghìn",
+        "translation": "一千",
+        "options": [
+            "重玄",
+            "玄重",
+            "重重"
+        ]
+    },
+    {
+        "audioFile": "audio-zhx.mp3",
+        "start": 2.129125,
+        "end": 3.829125,
+        "correctAnswer": "重玄",
+        "khongthanhdieu": "thưc hanh",
+        "cothanhdieu": "thực hành",
+        "translation": "实践",
+        "options": [
+            "重玄",
+            "玄平",
+            "平玄"
+        ]
+    },
+    {
+        "audioFile": "audio-zhx.mp3",
+        "start": 4.239125,
+        "end": 6.029125,
+        "correctAnswer": "重玄",
+        "khongthanhdieu": "vơ chông",
+        "cothanhdieu": "vợ chồng",
+        "translation": "夫妻",
+        "options": [
+            "重玄",
+            "玄锐",
+            "锐玄"
+        ]
+    },
+    {
+        "audioFile": "audio-zhx.mp3",
+        "start": 6.459125,
+        "end": 8.209125,
+        "correctAnswer": "重玄",
+        "khongthanhdieu": "hoc hanh",
+        "cothanhdieu": "học hành",
+        "translation": "学业",
+        "options": [
+            "重玄",
+            "玄问",
+            "问玄"
+        ]
+    },
+    {
+        "audioFile": "audio-zhx.mp3",
+        "start": 8.559125,
+        "end": 10.349125,
+        "correctAnswer": "重玄",
+        "khongthanhdieu": "đia câu",
+        "cothanhdieu": "địa cầu",
+        "translation": "地球",
+        "options": [
+            "重玄",
+            "玄跌",
+            "跌玄"
+        ]
+    },
+    {
+        "audioFile": "audio-zhx.mp3",
+        "start": 10.679125,
+        "end": 12.439125,
+        "correctAnswer": "重玄",
+        "khongthanhdieu": "đia tâng",
+        "cothanhdieu": "địa tầng",
+        "translation": "地层",
+        "options": [
+            "重玄",
+            "重平",
+            "平重"
+        ]
+    },
+    {
+        "audioFile": "audio-zhx.mp3",
+        "start": 12.799125,
+        "end": 14.579125,
+        "correctAnswer": "重玄",
+        "khongthanhdieu": "đia ban",
+        "cothanhdieu": "địa bàn",
+        "translation": "地盘",
+        "options": [
+            "重玄",
+            "重锐",
+            "锐重"
+        ]
+    },
+    {
+        "audioFile": "audio-zhx.mp3",
+        "start": 14.929125,
+        "end": 16.679125,
+        "correctAnswer": "重玄",
+        "khongthanhdieu": "đia hinh",
+        "cothanhdieu": "địa hình",
+        "translation": "地形",
+        "options": [
+            "重玄",
+            "重问",
+            "问重"
+        ]
+    },
+    {
+        "audioFile": "audio-zhx.mp3",
+        "start": 17.239125,
+        "end": 19.089125,
+        "correctAnswer": "重玄",
+        "khongthanhdieu": "đai tra",
+        "cothanhdieu": "đại trà",
+        "translation": "大规模",
+        "options": [
+            "重玄",
+            "重跌",
+            "跌重"
+        ]
+    },
+    {
+        "audioFile": "audio-zhx.mp3",
+        "start": 19.629125,
+        "end": 21.469125,
+        "correctAnswer": "重玄",
+        "khongthanhdieu": "đăc thu",
+        "cothanhdieu": "đặc thù",
+        "translation": "特殊",
+        "options": [
+            "重玄",
+            "重重",
+            "玄平"
+        ]
+    },
+    {
+        "audioFile": "audio-zhx.mp3",
+        "start": 22.109125,
+        "end": 23.839125,
+        "correctAnswer": "重玄",
+        "khongthanhdieu": "phuc hôi",
+        "cothanhdieu": "phục hồi",
+        "translation": "恢复",
+        "options": [
+            "重玄",
+            "平重",
+            "重锐"
+        ]
+    },
+    {
+        "audioFile": "audio-zhx.mp3",
+        "start": 24.389125,
+        "end": 26.219125,
+        "correctAnswer": "重玄",
+        "khongthanhdieu": "nôi thanh",
+        "cothanhdieu": "nội thành",
+        "translation": "市区",
+        "options": [
+            "重玄",
+            "平玄",
+            "玄问"
+        ]
+    },
+    {
+        "audioFile": "audio-zhx.mp3",
+        "start": 26.789125,
+        "end": 28.659125,
+        "correctAnswer": "重玄",
+        "khongthanhdieu": "ngoai thanh",
+        "cothanhdieu": "ngoại thành",
+        "translation": "郊区",
+        "options": [
+            "重玄",
+            "平锐",
+            "锐平"
+        ]
+    },
+    {
+        "audioFile": "audio-zhx.mp3",
+        "start": 29.199125,
+        "end": 30.989125,
+        "correctAnswer": "重玄",
+        "khongthanhdieu": "đô day",
+        "cothanhdieu": "độ dày",
+        "translation": "厚度",
+        "options": [
+            "重玄",
+            "平问",
+            "问平"
+        ]
+    },
+    {
+        "audioFile": "audio-zhx.mp3",
+        "start": 31.559125,
+        "end": 33.369125,
+        "correctAnswer": "重玄",
+        "khongthanhdieu": "thit ga",
+        "cothanhdieu": "thịt gà",
+        "translation": "鸡肉",
+        "options": [
+            "重玄",
+            "平跌",
+            "跌平"
+        ]
+    },
+    {
+        "audioFile": "audio-zhx.mp3",
+        "start": 33.949125,
+        "end": 35.739125,
+        "correctAnswer": "重玄",
+        "khongthanhdieu": "thit bo",
+        "cothanhdieu": "thịt bò",
+        "translation": "牛肉",
+        "options": [
+            "重玄",
+            "平重",
+            "重重"
+        ]
+    },
+    {
+        "audioFile": "audio-zhx.mp3",
+        "start": 36.329125,
+        "end": 38.169125,
+        "correctAnswer": "重玄",
+        "khongthanhdieu": "thit cưu",
+        "cothanhdieu": "thịt cừu",
+        "translation": "羊肉",
+        "options": [
+            "重玄",
+            "平玄",
+            "玄重"
+        ]
+    },
+    {
+        "audioFile": "audio-zhx.mp3",
+        "start": 38.719125,
+        "end": 40.499125,
+        "correctAnswer": "重玄",
+        "khongthanhdieu": "tư hao",
+        "cothanhdieu": "tự hào",
+        "translation": "自豪",
+        "options": [
+            "重玄",
+            "平锐",
+            "锐重"
+        ]
+    },
+    {
+        "audioFile": "audio-zhx.mp3",
+        "start": 41.069125,
+        "end": 42.939125,
+        "correctAnswer": "重玄",
+        "khongthanhdieu": "năng nê",
+        "cothanhdieu": "nặng nề",
+        "translation": "沉重",
+        "options": [
+            "重玄",
+            "平问",
+            "问重"
+        ]
+    },
+    {
+        "audioFile": "audio-zhx.mp3",
+        "start": 43.469125,
+        "end": 45.239125,
+        "correctAnswer": "重玄",
+        "khongthanhdieu": "đinh ky",
+        "cothanhdieu": "định kỳ",
+        "translation": "定期",
+        "options": [
+            "重玄",
+            "平跌",
+            "跌重"
+        ]
+    },
+	{
+        "audioFile": "audio-rp.mp3",
+        "start": 0,
+        "end": 1.65,
+        "correctAnswer": "锐平",
+        "khongthanhdieu": "but bi",
+        "cothanhdieu": "bút bi",
+        "translation": "圆珠笔",
+        "options": [
+            "锐平",
+            "平锐",
+            "锐锐"
+        ]
+    },
+    {
+        "audioFile": "audio-rp.mp3",
+        "start": 1.56,
+        "end": 3.53,
+        "correctAnswer": "锐平",
+        "khongthanhdieu": "quôc gia",
+        "cothanhdieu": "quốc gia",
+        "translation": "国家",
+        "options": [
+            "锐平",
+            "平玄",
+            "玄平"
+        ]
+    },
+    {
+        "audioFile": "audio-rp.mp3",
+        "start": 3.39,
+        "end": 5.44,
+        "correctAnswer": "锐平",
+        "khongthanhdieu": "sang nay",
+        "cothanhdieu": "sáng nay",
+        "translation": "今早",
+        "options": [
+            "锐平",
+            "平问",
+            "问平"
+        ]
+    },
+    {
+        "audioFile": "audio-rp.mp3",
+        "start": 5.33,
+        "end": 7.29,
+        "correctAnswer": "锐平",
+        "khongthanhdieu": "tiêng Anh",
+        "cothanhdieu": "tiếng Anh",
+        "translation": "英语",
+        "options": [
+            "锐平",
+            "平跌",
+            "跌平"
+        ]
+    },
+    {
+        "audioFile": "audio-rp.mp3",
+        "start": 7.09,
+        "end": 9.25,
+        "correctAnswer": "锐平",
+        "khongthanhdieu": "xâu trai",
+        "cothanhdieu": "xấu trai",
+        "translation": "难看",
+        "options": [
+            "锐平",
+            "平重",
+            "重平"
+        ]
+    },
+    {
+        "audioFile": "audio-rp.mp3",
+        "start": 9.15,
+        "end": 11.16,
+        "correctAnswer": "锐平",
+        "khongthanhdieu": "ca trê",
+        "cothanhdieu": "cá trê",
+        "translation": "鲶鱼",
+        "options": [
+            "锐平",
+            "锐玄",
+            "玄锐"
+        ]
+    },
+    {
+        "audioFile": "audio-rp.mp3",
+        "start": 11.5,
+        "end": 13.57,
+        "correctAnswer": "锐平",
+        "khongthanhdieu": "chin mươi",
+        "cothanhdieu": "chín mươi",
+        "translation": "九十",
+        "options": [
+            "锐平",
+            "锐跌",
+            "跌锐"
+        ]
+    },
+    {
+        "audioFile": "audio-rp.mp3",
+        "start": 13.46,
+        "end": 15.46,
+        "correctAnswer": "锐平",
+        "khongthanhdieu": "cuôi năm",
+        "cothanhdieu": "cuối năm",
+        "translation": "年底",
+        "options": [
+            "锐平",
+            "锐重",
+            "重锐"
+        ]
+    },
+    {
+        "audioFile": "audio-rp.mp3",
+        "start": 15.33,
+        "end": 17.35,
+        "correctAnswer": "锐平",
+        "khongthanhdieu": "chung tôi",
+        "cothanhdieu": "chúng tôi",
+        "translation": "我们",
+        "options": [
+            "锐平",
+            "跌平",
+            "平玄"
+        ]
+    },
+    {
+        "audioFile": "audio-rp.mp3",
+        "start": 17.23,
+        "end": 19.23,
+        "correctAnswer": "锐平",
+        "khongthanhdieu": "chung ta",
+        "cothanhdieu": "chúng ta",
+        "translation": "我们",
+        "options": [
+            "锐平",
+            "平锐",
+            "锐玄"
+        ]
+    },
+    {
+        "audioFile": "audio-rp.mp3",
+        "start": 19.11,
+        "end": 21.24,
+        "correctAnswer": "锐平",
+        "khongthanhdieu": "giao viên",
+        "cothanhdieu": "giáo viên",
+        "translation": "教师",
+        "options": [
+            "锐平",
+            "平问",
+            "问平"
+        ]
+    },
+    {
+        "audioFile": "audio-rp.mp3",
+        "start": 21.07,
+        "end": 23.18,
+        "correctAnswer": "锐平",
+        "khongthanhdieu": "giao sư",
+        "cothanhdieu": "giáo sư",
+        "translation": "教授",
+        "options": [
+            "锐平",
+            "平跌",
+            "跌平"
+        ]
+    },
+    {
+        "audioFile": "audio-rp.mp3",
+        "start": 23.08,
+        "end": 25.11,
+        "correctAnswer": "锐平",
+        "khongthanhdieu": "hoa đơn",
+        "cothanhdieu": "hóa đơn",
+        "translation": "账单",
+        "options": [
+            "锐平",
+            "平重",
+            "重平"
+        ]
+    },
+    {
+        "audioFile": "audio-rp.mp3",
+        "start": 24.96,
+        "end": 27.04,
+        "correctAnswer": "锐平",
+        "khongthanhdieu": "lai xe",
+        "cothanhdieu": "lái xe",
+        "translation": "开车",
+        "options": [
+            "锐平",
+            "锐玄",
+            "玄问"
+        ]
+    },
+    {
+        "audioFile": "audio-rp.mp3",
+        "start": 26.9,
+        "end": 29.02,
+        "correctAnswer": "锐平",
+        "khongthanhdieu": "may bay",
+        "cothanhdieu": "máy bay",
+        "translation": "飞机",
+        "options": [
+            "锐平",
+            "锐问",
+            "问锐"
+        ]
+    },
+    {
+        "audioFile": "audio-rp.mp3",
+        "start": 28.85,
+        "end": 30.92,
+        "correctAnswer": "锐平",
+        "khongthanhdieu": "met vuông",
+        "cothanhdieu": "mét vuông",
+        "translation": "平方米",
+        "options": [
+            "锐平",
+            "锐跌",
+            "跌锐"
+        ]
+    },
+    {
+        "audioFile": "audio-rp.mp3",
+        "start": 30.76,
+        "end": 32.86,
+        "correctAnswer": "锐平",
+        "khongthanhdieu": "nâu ăn",
+        "cothanhdieu": "nấu ăn",
+        "translation": "做饭",
+        "options": [
+            "锐平",
+            "锐重",
+            "重锐"
+        ]
+    },
+    {
+        "audioFile": "audio-rp.mp3",
+        "start": 32.8,
+        "end": 34.78,
+        "correctAnswer": "锐平",
+        "khongthanhdieu": "phat âm",
+        "cothanhdieu": "phát âm",
+        "translation": "发音",
+        "options": [
+            "锐平",
+            "平锐",
+            "锐问"
+        ]
+    },
+    {
+        "audioFile": "audio-rp.mp3",
+        "start": 34.72,
+        "end": 36.71,
+        "correctAnswer": "锐平",
+        "khongthanhdieu": "phong viên",
+        "cothanhdieu": "phóng viên",
+        "translation": "记者",
+        "options": [
+            "锐平",
+            "平玄",
+            "玄跌"
+        ]
+    },
+	{
+        "audioFile": "audio-wzh.mp3",
+        "start": 0.073792,
+        "end": 1.773792,
+        "correctAnswer": "问重",
+        "khongthanhdieu": "biêu thi",
+        "cothanhdieu": "biểu thị",
+        "translation": "表示",
+        "options": [
+            "问重",
+            "重问",
+            "问问"
+        ]
+    },
+    {
+        "audioFile": "audio-wzh.mp3",
+        "start": 1.773792,
+        "end": 3.323792,
+        "correctAnswer": "问重",
+        "khongthanhdieu": "chi đinh",
+        "cothanhdieu": "chỉ định",
+        "translation": "指定",
+        "options": [
+            "问重",
+            "重玄",
+            "玄重"
+        ]
+    },
+    {
+        "audioFile": "audio-wzh.mp3",
+        "start": 3.403792,
+        "end": 4.903792,
+        "correctAnswer": "问重",
+        "khongthanhdieu": "tiêu hoc",
+        "cothanhdieu": "tiểu học",
+        "translation": "小学",
+        "options": [
+            "问重",
+            "重平",
+            "平重"
+        ]
+    },
+    {
+        "audioFile": "audio-wzh.mp3",
+        "start": 4.903792,
+        "end": 6.563792,
+        "correctAnswer": "问重",
+        "khongthanhdieu": "chu nhât",
+        "cothanhdieu": "chủ nhật",
+        "translation": "星期日",
+        "options": [
+            "问重",
+            "重锐",
+            "锐重"
+        ]
+    },
+    {
+        "audioFile": "audio-wzh.mp3",
+        "start": 6.543792,
+        "end": 8.123792,
+        "correctAnswer": "问重",
+        "khongthanhdieu": "chu nhiêm",
+        "cothanhdieu": "chủ nhiệm",
+        "translation": "主任",
+        "options": [
+            "问重",
+            "重问",
+            "问平"
+        ]
+    },
+    {
+        "audioFile": "audio-wzh.mp3",
+        "start": 8.193792,
+        "end": 9.833792,
+        "correctAnswer": "问重",
+        "khongthanhdieu": "chuân bi",
+        "cothanhdieu": "chuẩn bị",
+        "translation": "准备",
+        "options": [
+            "问重",
+            "重重",
+            "重玄"
+        ]
+    },
+    {
+        "audioFile": "audio-wzh.mp3",
+        "start": 9.843792,
+        "end": 11.503792,
+        "correctAnswer": "问重",
+        "khongthanhdieu": "chung loai",
+        "cothanhdieu": "chủng loại",
+        "translation": "种类",
+        "options": [
+            "问重",
+            "重问",
+            "问锐"
+        ]
+    },
+    {
+        "audioFile": "audio-wzh.mp3",
+        "start": 11.463792,
+        "end": 13.083792,
+        "correctAnswer": "问重",
+        "khongthanhdieu": "canh ngô",
+        "cothanhdieu": "cảnh ngộ",
+        "translation": "境遇",
+        "options": [
+            "问重",
+            "重平",
+            "平问"
+        ]
+    },
+    {
+        "audioFile": "audio-wzh.mp3",
+        "start": 13.083792,
+        "end": 14.713792,
+        "correctAnswer": "问重",
+        "khongthanhdieu": "cam thu",
+        "cothanhdieu": "cảm thụ",
+        "translation": "感受",
+        "options": [
+            "问重",
+            "重玄",
+            "玄问"
+        ]
+    },
+    {
+        "audioFile": "audio-wzh.mp3",
+        "start": 14.653792,
+        "end": 16.283792,
+        "correctAnswer": "问重",
+        "khongthanhdieu": "cô thu",
+        "cothanhdieu": "cổ thụ",
+        "translation": "古树",
+        "options": [
+            "问重",
+            "重锐",
+            "锐问"
+        ]
+    },
+    {
+        "audioFile": "audio-wzh.mp3",
+        "start": 16.243792,
+        "end": 17.753792,
+        "correctAnswer": "问重",
+        "khongthanhdieu": "bao vât",
+        "cothanhdieu": "bảo vật",
+        "translation": "宝物",
+        "options": [
+            "问重",
+            "重跌",
+            "跌重"
+        ]
+    },
+    {
+        "audioFile": "audio-wzh.mp3",
+        "start": 17.743792,
+        "end": 19.373792,
+        "correctAnswer": "问重",
+        "khongthanhdieu": "gia đinh",
+        "cothanhdieu": "giả định",
+        "translation": "假设",
+        "options": [
+            "问重",
+            "重问",
+            "问玄"
+        ]
+    },
+    {
+        "audioFile": "audio-wzh.mp3",
+        "start": 19.333792,
+        "end": 21.003792,
+        "correctAnswer": "问重",
+        "khongthanhdieu": "giang day",
+        "cothanhdieu": "giảng dạy",
+        "translation": "教学",
+        "options": [
+            "问重",
+            "重平",
+            "平重"
+        ]
+    },
+    {
+        "audioFile": "audio-wzh.mp3",
+        "start": 20.943792,
+        "end": 22.563792,
+        "correctAnswer": "问重",
+        "khongthanhdieu": "gian lươc",
+        "cothanhdieu": "giản lược",
+        "translation": "省略",
+        "options": [
+            "问重",
+            "重玄",
+            "玄重"
+        ]
+    },
+    {
+        "audioFile": "audio-wzh.mp3",
+        "start": 22.633792,
+        "end": 24.243792,
+        "correctAnswer": "问重",
+        "khongthanhdieu": "phan xa",
+        "cothanhdieu": "phản xạ",
+        "translation": "反应",
+        "options": [
+            "问重",
+            "重锐",
+            "锐重"
+        ]
+    },
+    {
+        "audioFile": "audio-wzh.mp3",
+        "start": 24.183792,
+        "end": 25.783792,
+        "correctAnswer": "问重",
+        "khongthanhdieu": "quan tri",
+        "cothanhdieu": "quản trị",
+        "translation": "管理",
+        "options": [
+            "问重",
+            "重问",
+            "问平"
+        ]
+    },
+    {
+        "audioFile": "audio-wzh.mp3",
+        "start": 25.773792,
+        "end": 27.373792,
+        "correctAnswer": "问重",
+        "khongthanhdieu": "tương tương",
+        "cothanhdieu": "tưởng tượng",
+        "translation": "想象",
+        "options": [
+            "问重",
+            "重重",
+            "重玄"
+        ]
+    },
+    {
+        "audioFile": "audio-wzh.mp3",
+        "start": 27.393792,
+        "end": 28.953792,
+        "correctAnswer": "问重",
+        "khongthanhdieu": "kiêm đinh",
+        "cothanhdieu": "kiểm định",
+        "translation": "检定",
+        "options": [
+            "问重",
+            "重问",
+            "问锐"
+        ]
+    },
+    {
+        "audioFile": "audio-wzh.mp3",
+        "start": 28.923792,
+        "end": 30.563792,
+        "correctAnswer": "问重",
+        "khongthanhdieu": "kiêm nghiêm",
+        "cothanhdieu": "kiểm nghiệm",
+        "translation": "检验",
+        "options": [
+            "问重",
+            "重平",
+            "平问"
+        ]
+    },
+    {
+        "audioFile": "audio-wzh.mp3",
+        "start": 30.503792,
+        "end": 32.083792,
+        "correctAnswer": "问重",
+        "khongthanhdieu": "ky niêm",
+        "cothanhdieu": "kỷ niệm",
+        "translation": "纪念",
+        "options": [
+            "问重",
+            "重玄",
+            "玄问"
+        ]
+    }
+        ];
+
+        let currentIndex = 0;
+        let isFreeMode = true;
+        let isComprehensive = false;
+        let autoContinue = false;
+        let playOrder = [];
+        let correctCount = 0;
+        let userAnswers = [];
+
+        const elements = {
+            indicator: document.getElementById('indicator'),
+            options: document.getElementById('optionsContainer'),
+            audio: document.getElementById('mainAudio'),
+            correctAudio: document.getElementById('correctAudio'),
+            wrongAudio: document.getElementById('wrongAudio'),
+            sentenceNumber: document.getElementById('sentenceNumber'),
+            results: document.getElementById('results'),
+            score: document.getElementById('score'),
+            copyBtn: document.getElementById('copyBtn'),
+            btns: {
+                free: document.getElementById('freeModeBtn'),
+                test: document.getElementById('testModeBtn'),
+                auto: document.getElementById('autoContinueBtn'),
+                mix: document.getElementById('mixModeBtn'),
+                prev: document.getElementById('prevBtn'),
+                next: document.getElementById('nextBtn'),
+                replay: document.getElementById('replayBtn')
+            }
+        };
+
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function initPlayOrder() {
+            playOrder = Array.from(Array(sentences.length).keys());
+            if (isComprehensive) shuffle(playOrder);
+            currentIndex = 0;
+        }
+
+        function updateScoreDisplay() {
+            if (!isFreeMode) {
+                elements.score.textContent = `进度: ${currentIndex + 1}/${sentences.length} | 正确: ${correctCount}`;
+            } else {
+                elements.score.textContent = '';
+            }
+        }
+
+        function updateUI() {
+            const actualIndex = playOrder[currentIndex];
+            const data = sentences[actualIndex];
+            
+            elements.sentenceNumber.value = actualIndex + 1;
+            elements.indicator.style.background = '#ffffe0';
+            elements.indicator.textContent = data.khongthanhdieu;
+            
+            elements.options.innerHTML = '';
+            shuffle([...data.options]).forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = 'optionBtn';
+                btn.textContent = opt;
+                btn.onclick = () => checkAnswer(opt);
+                elements.options.appendChild(btn);
+            });
+
+            updateScoreDisplay();
+        }
+
+        function playAudio() {
+            const data = sentences[playOrder[currentIndex]];
+            elements.audio.src = data.audioFile;
+            elements.audio.currentTime = data.start;
+            elements.audio.play();
+
+            const checkEnd = () => {
+                if (elements.audio.currentTime >= data.end) {
+                    elements.audio.pause();
+                    elements.audio.removeEventListener('timeupdate', checkEnd);
+                }
+            };
+            elements.audio.addEventListener('timeupdate', checkEnd);
+        }
+
+        function checkAnswer(selected) {
+            const actualIndex = playOrder[currentIndex];
+            const data = sentences[actualIndex];
+            const isCorrect = selected === data.correctAnswer;
+            
+            if (isCorrect) {
+                elements.indicator.style.background = '#B7D7AA';
+                elements.indicator.innerHTML = `<div>${data.cothanhdieu}</div><div style="font-size:18px; color:#555">${data.translation}</div>`;
+                elements.correctAudio.play();
+            } else {
+                elements.indicator.style.background = '#CE6D5E';
+                elements.wrongAudio.play();
+            }
+
+            Array.from(elements.options.children).forEach(btn => {
+                if (btn.textContent === selected) btn.classList.add(isCorrect ? 'correct' : 'wrong');
+                if (!isFreeMode) btn.classList.add('disabled');
+            });
+
+            if (!isFreeMode) {
+                if (isCorrect) correctCount++;
+                userAnswers[actualIndex] = { selected, isCorrect }; // 记录每个题目的原始索引答案
+                
+                updateScoreDisplay();
+
+                elements.correctAudio.onended = elements.wrongAudio.onended = () => {
+                    setTimeout(() => {
+                        if (currentIndex < sentences.length - 1) {
+                            currentIndex++;
+                            updateUI();
+                            playAudio();
+                        } else {
+                            showFinalResults();
+                        }
+                    }, 500);
+                };
+            } else if (autoContinue && isCorrect) {
+                elements.correctAudio.onended = () => {
+                    setTimeout(() => {
+                        currentIndex = (currentIndex + 1) % sentences.length;
+                        updateUI();
+                        playAudio();
+                    }, 500);
+                };
+            }
+        }
+
+        function showFinalResults() {
+            elements.options.innerHTML = '';
+            elements.results.style.display = 'block';
+            elements.copyBtn.style.display = 'block';
+            
+            let report = `练习完成！\n`;
+            report += `正确率: ${((correctCount / sentences.length) * 100).toFixed(2)}% (${correctCount}/${sentences.length})\n`;
+            
+            // 检查是否有错题
+            const wrongAnswers = sentences.filter((s, i) => !userAnswers[i] || !userAnswers[i].isCorrect);
+            
+            if (wrongAnswers.length === 0) {
+                report += `------------------\n太棒了！全部正确！`;
+            } else {
+                report += `以下是错题汇总 \n`;
+                report += `------------------\n`;
+                sentences.forEach((s, i) => {
+                    const ans = userAnswers[i];
+                    if (!ans || !ans.isCorrect) {
+                        // 只添加选错的题目到报告中
+                        report += `✗ 第${i+1}题: ${s.khongthanhdieu} -> 正确应为: ${s.cothanhdieu} (${s.correctAnswer})\n`;
+                    }
+                });
+            }
+            
+            elements.results.textContent = report;
+        }
+
+        // 控制逻辑
+        elements.btns.free.onclick = () => {
+            isFreeMode = true;
+            elements.btns.free.classList.add('active-mode');
+            elements.btns.test.classList.remove('active-mode');
+            elements.btns.mix.classList.remove('disabled');
+            elements.btns.auto.classList.remove('disabled');
+            elements.results.style.display = 'none';
+            elements.copyBtn.style.display = 'none';
+            initPlayOrder();
+            updateUI();
+        };
+
+        elements.btns.test.onclick = () => {
+            isFreeMode = false;
+            isComprehensive = true;
+            autoContinue = true;
+            elements.btns.test.classList.add('active-mode');
+            elements.btns.free.classList.remove('active-mode');
+            elements.btns.mix.classList.add('active-mode', 'disabled');
+            elements.btns.auto.classList.add('active-mode', 'disabled');
+            elements.results.style.display = 'none';
+            elements.copyBtn.style.display = 'none';
+            correctCount = 0;
+            userAnswers = [];
+            initPlayOrder();
+            updateUI();
+        };
+
+        elements.btns.mix.onclick = () => {
+            if (isFreeMode) {
+                isComprehensive = !isComprehensive;
+                elements.btns.mix.classList.toggle('active-mode');
+                initPlayOrder();
+                updateUI();
+            }
+        };
+
+        elements.btns.auto.onclick = () => {
+            if (isFreeMode) {
+                autoContinue = !autoContinue;
+                elements.btns.auto.classList.toggle('active-mode');
+            }
+        };
+
+        elements.btns.next.onclick = () => { currentIndex = (currentIndex + 1) % sentences.length; updateUI(); playAudio(); };
+        elements.btns.prev.onclick = () => { currentIndex = (currentIndex - 1 + sentences.length) % sentences.length; updateUI(); playAudio(); };
+        elements.btns.replay.onclick = playAudio;
+
+        elements.copyBtn.onclick = () => {
+            navigator.clipboard.writeText(elements.results.textContent).then(() => {
+                alert("错题结果已复制！");
+            });
+        };
+
+        initPlayOrder();
+        updateUI();
+    </script>
+</body>
+</html>
