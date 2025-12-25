@@ -1748,7 +1748,7 @@
             }
         }
 
-        function showFinalResults() {
+function showFinalResults() {
             elements.options.innerHTML = '';
             elements.results.style.display = 'block';
             elements.copyBtn.style.display = 'block';
@@ -1756,19 +1756,22 @@
             let report = `练习完成！\n`;
             report += `正确率: ${((correctCount / sentences.length) * 100).toFixed(2)}% (${correctCount}/${sentences.length})\n`;
             
-            // 检查是否有错题
+            // Lọc ra các câu làm sai
             const wrongAnswers = sentences.filter((s, i) => !userAnswers[i] || !userAnswers[i].isCorrect);
             
             if (wrongAnswers.length === 0) {
                 report += `------------------\n太棒了！全部正确！`;
             } else {
-                report += `以下是错题汇总 \n`;
+                report += `以下 là danh sách các câu trả lời chưa chính xác: \n`;
                 report += `------------------\n`;
                 sentences.forEach((s, i) => {
                     const ans = userAnswers[i];
                     if (!ans || !ans.isCorrect) {
-                        // 只添加选错的题目到报告中
-                        report += `✗ 第${i+1}题: ${s.khongthanhdieu} -> 正确应为: ${s.cothanhdieu} (${s.correctAnswer})\n`;
+                        // Hiển thị lựa chọn của người dùng và đáp án đúng
+                        const userChoice = ans ? ans.selected : "未回答 (Chưa trả lời)";
+                        report += `✗ 第${i+1}题: ${s.khongthanhdieu}\n`;
+                        report += `   - Bạn đã chọn: ${userChoice}\n`;
+                        report += `   - Đáp án đúng: ${s.correctAnswer} (${s.cothanhdieu})\n\n`;
                     }
                 });
             }
